@@ -1,16 +1,16 @@
-# Keras-Fully Convolutional Networks for semantic segmentation
+# Fully Convolutional Networks for semantic segmentation
 
 Keras implementation of 
 [Fully Convolutional Networks for Semantic Segmentation](https://arxiv.org/abs/1411.4038).
 
 # Usage
 ## Training
-1 Write training config in "args.json".  
+1 Write training config in "args.json".  
 2 `python train.py`  
 3 Start training.
 
 ## Prediction
-1 Write predict config in "args.json".  
+1 Write predict config in "args.json".  
 2 `python predict.py`  
 3 Start prediction and show result images.
 
