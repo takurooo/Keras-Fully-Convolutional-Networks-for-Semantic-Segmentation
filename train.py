@@ -1,6 +1,6 @@
-#-------------------------------------------
+# -------------------------------------------
 # import
-#-------------------------------------------
+# -------------------------------------------
 import os
 import argparse
 import codecs
@@ -12,24 +12,17 @@ from models import FCN8s
 from dataloader import DataLoader
 from utils import list_util
 
-#-------------------------------------------
+# -------------------------------------------
 # defines
-#-------------------------------------------
+# -------------------------------------------
 CUR_PATH = os.path.join(os.path.dirname(__file__))
 JSON_PATH = os.path.join(CUR_PATH, 'args.json')
-WEIGHT_PATH = os.path.join(CUR_PATH, 'weights')
-TRAIN_DATA_DIR = os.path.join(CUR_PATH, 'data', 'train')
-VAL_DATA_DIR = os.path.join(CUR_PATH, 'data', 'val')
-TRAIN_IMG_DIR = os.path.join(TRAIN_DATA_DIR, 'img')
-TRAIN_GT_DIR = os.path.join(TRAIN_DATA_DIR, 'gt')
-VAL_IMG_DIR = os.path.join(VAL_DATA_DIR, 'img')
-VAL_GT_DIR = os.path.join(VAL_DATA_DIR, 'gt')
 
 N_CLASS = 21
 INPUT_SIZE = 224
-#-------------------------------------------
+# -------------------------------------------
 # private functions
-#-------------------------------------------
+# -------------------------------------------
 
 
 def get_args():
