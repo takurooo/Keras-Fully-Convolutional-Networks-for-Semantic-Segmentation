@@ -5,7 +5,7 @@ Keras implementation of
 
 # Usage
 ## Training
-1 Create a new folder and put training and validation data.  
+1 Create a new folder and put training and validation data.  
 2 Write training config in "args.json".  
 3 `python train.py`  
 4 Start training.
