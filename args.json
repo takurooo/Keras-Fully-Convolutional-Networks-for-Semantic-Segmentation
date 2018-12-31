@@ -1,15 +1,17 @@
 {
     "train": {
-        "train_img_dir": "data/train/img",
-        "train_gt_dir": "data/train/gt",
-        "val_img_dir": "data/val/img",
-        "val_gt_dir": "data/val/gt",
+        "model": "vgg_fcn8s",
+        "train_img_dir": "/Users/nakajimatakurou/temp/python/experiments/my_fcn/data/train/img",
+        "train_gt_dir": "/Users/nakajimatakurou/temp/python/experiments/my_fcn/data/train/gt",
+        "val_img_dir": "/Users/nakajimatakurou/temp/python/experiments/my_fcn/data/val/img",
+        "val_gt_dir": "/Users/nakajimatakurou/temp/python/experiments/my_fcn/data/val/gt",
         "epochs": 1,
         "batch_size": 24,
-        "log_dir": "log"
+        "log_dir": "/Users/nakajimatakurou/temp/python/experiments/my_fcn/log"
     },
     "predict": {
-        "img_dir": "data/train/img",
-        "log_dir": "log"
+        "model": "vgg_fcn8s",
+        "img_dir": "/Users/nakajimatakurou/temp/python/experiments/my_fcn/data/train/img",
+        "log_dir": "/Users/nakajimatakurou/temp/python/experiments/my_fcn/log"
     }
 }

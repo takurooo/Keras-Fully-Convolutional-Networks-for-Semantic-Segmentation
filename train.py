@@ -1,28 +1,28 @@
-# -------------------------------------------
+#-------------------------------------------
 # import
-# -------------------------------------------
+#-------------------------------------------
 import os
+import sys
 import argparse
 import codecs
+import importlib
 import json
 import numpy as np
 from keras import optimizers
 from keras.callbacks import TensorBoard, ModelCheckpoint
-from models import FCN8s
 from dataloader import DataLoader
 from utils import list_util
-
-# -------------------------------------------
+#-------------------------------------------
 # defines
-# -------------------------------------------
+#-------------------------------------------
 CUR_PATH = os.path.join(os.path.dirname(__file__))
 JSON_PATH = os.path.join(CUR_PATH, 'args.json')
 
 N_CLASS = 21
 INPUT_SIZE = 224
-# -------------------------------------------
+#-------------------------------------------
 # private functions
-# -------------------------------------------
+#-------------------------------------------
 
 
 def get_args():
@@ -39,6 +39,7 @@ def get_args():
 
 
 def main(args):
+    model_name = args["model"]
     train_img_dir = args["train_img_dir"]
     train_gt_dir = args["train_gt_dir"]
     val_img_dir = args["val_img_dir"]
@@ -88,7 +89,9 @@ def main(args):
     '''
     Create Model
     '''
-    model = FCN8s(classes=N_CLASS, input_shape=(INPUT_SIZE, INPUT_SIZE, 3))
+    model = importlib.import_module("models." + model_name)
+    model = model.build(classes=N_CLASS,
+                        input_shape=(INPUT_SIZE, INPUT_SIZE, 3))
     # mode.summary()
 
     '''

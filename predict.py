@@ -3,11 +3,11 @@
 #-------------------------------------------
 import os
 import argparse
+import importlib
 import json
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-from models import FCN8s
 from dataloader import DataLoader
 from utils import list_util
 from utils.color import make_cmap
@@ -77,9 +77,10 @@ def latest_weight(log_dir):
 
 
 def main(args):
+    model_name = args["model"]
     img_dir = args["img_dir"]
     log_dir = args["log_dir"]
-    img_idx = 20
+    img_idx = 33
 
     img_paths = list_util.list_from_dir(img_dir, ('.jpg', '.png'))
 
@@ -94,7 +95,9 @@ def main(args):
     '''
     Create Model
     '''
-    model = FCN8s(classes=N_CLASS, input_shape=(INPUT_SIZE, INPUT_SIZE, 3))
+    model = importlib.import_module("models." + model_name)
+    model = model.build(classes=N_CLASS,
+                        input_shape=(INPUT_SIZE, INPUT_SIZE, 3))
     # mode.summary()
 
     '''
@@ -121,7 +124,7 @@ def main(args):
     '''
     Show Predict to Image
     '''
-    plt.figure(figsize=(5, 5))
+    plt.figure(figsize=(15, 15))
     img_list = [input_img_, pred_img]
     titel_list = ["input img", "predicted img"]
     plot_num = 1
@@ -132,7 +135,8 @@ def main(args):
         plt.imshow(img)
         plot_num += 1
 
-    plt.show()
+    # plt.show()
+    plt.savefig("predict_{}.png".format(img_idx))
 
 
 if __name__ == '__main__':

@@ -59,16 +59,26 @@ def one_hot_array(label_array, classes, size):
     return x
 
 
+def preprocess(x):
+    # return x / 127.5 - 1
+    return x / 255
+
 #-------------------------------------------
 # public functions
 #-------------------------------------------
+
+
 class DataLoader:
 
-    def __init__(self, classes, input_size):
+    def __init__(self, classes, input_size, preprocess_func=None):
         self.classes = classes
         self.input_size = input_size
         self.x_data_list = []
         self.y_data_list = []
+        if preprocess_func:
+            self.preprocess_func = preprocess_func
+        else:
+            self.preprocess_func = preprocess
 
     def load_data(self, path, label_data=False):
         img_pil = Image.open(path)
@@ -81,7 +91,7 @@ class DataLoader:
             img_array = np.expand_dims(img_array, axis=0)
         else:
             img_array = np.asarray(img_pil, dtype=np.float32)
-            img_array = img_array / 127.5 - 1  # for vgg16
+            img_array = self.preprocess_func(img_array)  # for vgg16
             img_array = np.expand_dims(img_array, axis=0)
             # img_array = preprocess_input(img_array, mode='tf')  # for vgg16
 
@@ -135,6 +145,7 @@ class DataLoader:
 #-------------------------------------------
 # main
 #-------------------------------------------
+
 if __name__ == '__main__':
     print("start")
 
@@ -143,7 +154,7 @@ if __name__ == '__main__':
     #train_img_paths = list_from_dir(train_img_dir, ('.jpg', '.png'))
     #train_gt_paths = list_from_dir(train_gt_dir, ('.jpg', '.png'))
 
-    loader = DataLoader(classes=21, input_size=224)
+    loader = DataLoader(classes=21, input_size=224, preprocess_func=None)
     for train, target in loader.flow_from_directory(train_img_dir, train_gt_dir, batch_size=1, random_seed=0):
         print(train.shape)
         print(target.shape)
