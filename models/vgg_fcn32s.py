@@ -2,94 +2,52 @@
 # import
 #-----------------------------------------
 import os
-import argparse
-from keras.applications import VGG16
+import sys
 from keras.layers import Input, Conv2D, Conv2DTranspose, Add, Activation, MaxPooling2D, Dropout, UpSampling2D
 from keras.models import Model
 from keras.initializers import Constant
 from keras.regularizers import l2
-import numpy as np
-from models.layers import BilinearUpSampling2D, bilinear_upsample_weights
+from .layers import BilinearUpSampling2D, bilinear_upsample_weights
+from .encorders import build_vgg16
+
+
 #-----------------------------------------
 # defines
 #-----------------------------------------
 CUR_PATH = os.path.join(os.path.dirname(__file__))
+
 #-----------------------------------------
 # functions
 #-----------------------------------------
 
 
-def get_args():
-    parser = argparse.ArgumentParser(description="models.")
-    return parser.parse_args()
+def build(classes=21, input_shape=(224, 224, 3), weights_path=None, weight_decay=0., drop_rate=None, bilinear=False):
 
+    # Build Base Encorder
+    encorder = build_vgg16(input_shape, weights_path,
+                           weight_decay, drop_rate)
 
-def build(classes=21, input_shape=(224, 224, 3), drop_rate=None, bilinear=False):
+    encorder_input = encorder.inputs[0]
 
-    vgg16 = VGG16(weights='imagenet',
-                  include_top=False,
-                  input_shape=input_shape)
+    x = encorder.outputs[0]
 
-    '''
-    Base Encorder
-    '''
-    input = Input(shape=input_shape)
+    # dimention reduction
+    x = Conv2D(classes, 1, activation='relu', name='conv_p7',
+               kernel_regularizer=l2(weight_decay),
+               kernel_initializer='he_normal')(x)
 
-    x = vgg16.layers[1](input)
-    x = vgg16.layers[2](x)
-    x = vgg16.layers[3](x)
-    x = vgg16.layers[4](x)
-    x = vgg16.layers[5](x)
-    x = vgg16.layers[6](x)
-    x = vgg16.layers[7](x)
-    x = vgg16.layers[8](x)
-    x = vgg16.layers[9](x)
-    x = vgg16.layers[10](x)
-
-    x = vgg16.layers[11](x)
-    x = vgg16.layers[12](x)
-    x = vgg16.layers[13](x)
-    x = vgg16.layers[14](x)
-
-    x = vgg16.layers[15](x)
-    x = vgg16.layers[16](x)
-    x = vgg16.layers[17](x)
-    x = vgg16.layers[18](x)
-
-    x = Conv2D(4096, (7, 7), activation='relu', padding='same', name='fc6')(x)
-    if drop_rate:
-        x = Dropout(drop_rate)(x)
-    x = Conv2D(4096, (1, 1), activation='relu', padding='same', name='fc7')(x)
-    if drop_rate:
-        x = Dropout(drop_rate)(x)
-
-    x = Conv2D(classes, 1, activation='relu', name='score_fr')(x)
-
-    # upsampling x8
+    # upsampling x32
     if bilinear:
         x = BilinearUpSampling2D((32, 32))(x)
     else:
-        x = Conv2DTranspose(
-            classes, 64, activation='relu',
-            #kernel_initializer=Constant(bilinear_upsample_weights(8, classes)),
-            strides=32, padding='same', name='upscore_final')(x)
+        x = Conv2DTranspose(classes, 64, activation='relu',
+                            strides=32, padding='same', name='upscore_final',
+                            kernel_regularizer=l2(weight_decay),
+                            #kernel_initializer=Constant(bilinear_upsample_weights(8, classes)),
+                            kernel_initializer='he_normal')(x)
 
     x = Activation('softmax', name='softmax')(x)
 
-    return Model(input, x)
+    model = Model(encorder_input, x)
 
-
-#-----------------------------------------
-# main
-#-----------------------------------------
-
-
-def main(args):
-    model = build()
-    print(model.summary())
-
-
-if __name__ == '__main__':
-    print("start")
-    main(get_args())
-    print("end")
+    return model
