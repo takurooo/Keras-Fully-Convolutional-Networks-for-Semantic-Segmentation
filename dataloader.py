@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
 from list_util import *
 import transforms
+from transforms import label_to_img
+
 # -------------------------------------------
 # defines
 # -------------------------------------------
@@ -107,19 +109,19 @@ class DataLoader:
     def flow(self):
         while True:
             data_num = len(self.dataset)
+            indices = np.arange(data_num)
             if self.shuffle:
-                indices = np.random.randint(0, data_num, data_num)
-            else:
-                indices = np.arange(data_num)
+                np.random.shuffle(indices)
+
             for i in indices:
                 img, label = self.dataset[i]
                 self.x_data_list.append(img[0])
                 self.y_data_list.append(label[0])
                 if self.batch_size <= len(self.x_data_list):
                     x_data_list = np.asarray(
-                        self.x_data_list, dtype=np.float32)
+                        self.x_data_list, dtype='float32')
                     y_data_list = np.asarray(
-                        self.y_data_list, dtype=np.uint8)
+                        self.y_data_list, dtype='float32')
                     self.x_data_list = []
                     self.y_data_list = []
                     yield x_data_list, y_data_list
@@ -128,7 +130,6 @@ class DataLoader:
 # -------------------------------------------
 # main
 # -------------------------------------------
-
 if __name__ == '__main__':
     print("start")
 
@@ -139,25 +140,30 @@ if __name__ == '__main__':
 
     dataset = Dataset(classes=21, input_size=(224, 224),
                       img_dir=train_img_dir, label_dir=train_gt_dir,
-                      train=True)
+                      train=False)
 
-    loader = DataLoader(dataset, batch_size=1, shuffle=False)
+    cnt = 0
+    loader = DataLoader(dataset, batch_size=4, shuffle=True)
     for train, target in loader.flow():
         print(train.shape, train[0].dtype)
         print(target.shape, target[0].dtype)
         imgs = train
         labels = target
-        break
 
-    img = imgs[0] * 255
-    img = img.astype(np.uint8)
-    plt.figure()
-    plt.imshow(img)
+        img = imgs[0] * 255
+        img = img.astype(np.uint8)
+        plt.figure()
+        plt.imshow(img)
 
-    label = labels[0, :, :, 0]  # background class
-    plt.figure()
-    plt.imshow(label)
+        # label = labels[0, :, :, 0]  # background class
+        label = label_to_img(labels[0])
+        plt.figure()
+        plt.imshow(label)
 
-    plt.show()
+        plt.show()
+
+        cnt += 1
+        if cnt >= 4:
+            break
 
     print("end")
