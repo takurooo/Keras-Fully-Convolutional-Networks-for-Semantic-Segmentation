@@ -10,8 +10,8 @@ import json
 import numpy as np
 from keras import optimizers
 from keras.callbacks import TensorBoard, ModelCheckpoint
-from dataloader import DataLoader
-from utils import list_util
+from dataloader import DataLoader, Dataset
+import list_util
 #-------------------------------------------
 # defines
 #-------------------------------------------
@@ -50,27 +50,26 @@ def main(args):
 
     os.makedirs(log_dir, exist_ok=True)
 
-    train_img_paths = list_util.list_from_dir(train_img_dir, ('.jpg', '.png'))
-    train_gt_paths = list_util.list_from_dir(train_gt_dir, ('.jpg', '.png'))
-    val_img_paths = list_util.list_from_dir(val_img_dir, ('.jpg', '.png'))
-    val_gt_paths = list_util.list_from_dir(val_gt_dir, ('.jpg', '.png'))
-
-    steps_per_epoch = len(train_img_paths) // batch_size
-    validation_steps = len(val_img_paths) // batch_size
-
-    print("train_img_len   : {}".format(len(train_img_paths)))
-    print("train_gt_len    : {}".format(len(train_gt_paths)))
-    print("val_img_paths   : {}".format(len(val_img_paths)))
-    print("val_gt_paths    : {}".format(len(val_gt_paths)))
-    print("epochs          : ", epochs)
-    print("batch_size      : ", batch_size)
-    print("steps_per_epoch : ", steps_per_epoch)
-
     '''
     Create DataLoader
     '''
-    train_loader = DataLoader(N_CLASS, input_size=INPUT_SIZE)
-    val_loader = DataLoader(N_CLASS, input_size=INPUT_SIZE)
+    trn_dataset = Dataset(classes=21, input_size=(224, 224),
+                          img_dir=train_img_dir, label_dir=train_gt_dir,
+                          train=True)
+    val_dataset = Dataset(classes=21, input_size=(224, 224),
+                          img_dir=val_img_dir, label_dir=val_gt_dir,
+                          train=False)
+    train_loader = DataLoader(trn_dataset, batch_size=24, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=24, shuffle=False)
+
+    steps_per_epoch = len(trn_dataset) // batch_size
+    validation_steps = len(val_dataset) // batch_size
+
+    print("train_img_len   : {}".format(len(trn_dataset)))
+    print("val_img_len     : {}".format(len(val_dataset)))
+    print("epochs          : ", epochs)
+    print("batch_size      : ", batch_size)
+    print("steps_per_epoch : ", steps_per_epoch)
 
     '''
     Setting Callback
@@ -106,12 +105,10 @@ def main(args):
     Start Training
     '''
     model.fit_generator(
-        train_loader.flow(
-            train_img_paths, train_gt_paths, batch_size=batch_size),
+        train_loader.flow(),
         steps_per_epoch=steps_per_epoch,
         epochs=epochs,
-        validation_data=val_loader.flow(
-            val_img_paths, val_gt_paths, batch_size=batch_size),
+        validation_data=val_loader.flow(),
         validation_steps=validation_steps,
         callbacks=cbs,
         verbose=1)

@@ -8,9 +8,9 @@ import json
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-from dataloader import DataLoader
-from utils import list_util
-from utils.color import make_cmap
+from dataloader import DataLoader, Dataset
+import list_util
+from color import make_cmap
 
 #-------------------------------------------
 # defines
@@ -80,17 +80,18 @@ def main(args):
     model_name = args["model"]
     img_dir = args["img_dir"]
     log_dir = args["log_dir"]
-    img_idx = 33
-
-    img_paths = list_util.list_from_dir(img_dir, ('.jpg', '.png'))
-
-    print("img_len   : {}".format(len(img_paths)))
+    img_idx = 1
 
     '''
     Create DataLoader
     '''
-    loader = DataLoader(N_CLASS, input_size=INPUT_SIZE)
-    input_img = loader.load_data(img_paths[img_idx])
+    dataset = Dataset(classes=21, input_size=(224, 224),
+                      img_dir=img_dir, label_dir=None,
+                      train=False)
+
+    input_img, _ = dataset[img_idx]
+
+    print("img_len   : {}".format(len(dataset)))
 
     '''
     Create Model
@@ -118,7 +119,7 @@ def main(args):
     '''
     pred_img = pred_to_img(pred)
 
-    input_img_ = (input_img[0] + 1) * 127.5
+    input_img_ = input_img[0] * 255
     input_img_ = np.uint8(input_img_)
 
     '''
