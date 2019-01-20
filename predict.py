@@ -10,8 +10,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from dataloader import DataLoader, Dataset
 import list_util
-from color import make_cmap
-
+from transforms import label_to_img
 #-------------------------------------------
 # defines
 #-------------------------------------------
@@ -56,18 +55,6 @@ def get_args():
     return j['predict']
 
 
-def pred_to_img(pred):
-    cmap = make_cmap()
-
-    pred_ = np.argmax(pred[0], axis=2)
-    row, col = pred_.shape
-    dst = np.ones((row, col, 3))
-    for i in range(21):
-        dst[pred_ == i] = cmap[i]
-
-    return np.uint8(dst)
-
-
 def latest_weight(log_dir):
     weight_paths = list_util.list_from_dir(log_dir, '.hdf5')
     if len(weight_paths) == 0:
@@ -87,7 +74,7 @@ def main(args):
     '''
     dataset = Dataset(classes=21, input_size=(224, 224),
                       img_dir=img_dir, label_dir=None,
-                      train=False)
+                      trans=False)
 
     input_img, _ = dataset[img_idx]
 
@@ -117,7 +104,7 @@ def main(args):
     '''
     Convert
     '''
-    pred_img = pred_to_img(pred)
+    pred_img = label_to_img(pred[0])
 
     input_img_ = input_img[0] * 255
     input_img_ = np.uint8(input_img_)

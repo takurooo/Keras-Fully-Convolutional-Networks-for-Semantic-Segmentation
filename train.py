@@ -55,10 +55,10 @@ def main(args):
     '''
     trn_dataset = Dataset(classes=21, input_size=(224, 224),
                           img_dir=train_img_dir, label_dir=train_gt_dir,
-                          train=True)
+                          trans=True)
     val_dataset = Dataset(classes=21, input_size=(224, 224),
                           img_dir=val_img_dir, label_dir=val_gt_dir,
-                          train=False)
+                          trans=False)
     train_loader = DataLoader(trn_dataset, batch_size=24, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=24, shuffle=False)
 
@@ -90,13 +90,16 @@ def main(args):
     '''
     model = importlib.import_module("models." + model_name)
     model = model.build(classes=N_CLASS,
-                        input_shape=(INPUT_SIZE, INPUT_SIZE, 3))
+                        input_shape=(INPUT_SIZE, INPUT_SIZE, 3),
+                        bilinear=True,
+                        drop_rate=0.5,
+                        weight_decay=0.00005)
     # mode.summary()
 
     '''
     Compile
     '''
-    optimizer = optimizers.SGD(lr=0.01, momentum=0.9, nesterov=True)
+    optimizer = optimizers.SGD(lr=0.0001, momentum=0.9, nesterov=True)
     model.compile(loss="categorical_crossentropy",
                   optimizer=optimizer,
                   metrics=["accuracy"])

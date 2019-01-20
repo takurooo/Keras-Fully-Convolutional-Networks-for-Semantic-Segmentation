@@ -32,17 +32,17 @@ CUR_PATH = os.path.join(os.path.dirname(__file__))
 
 class Dataset:
 
-    def __init__(self, classes, input_size, img_dir, label_dir=None, train=True):
+    def __init__(self, classes, input_size, img_dir, label_dir=None, trans=False):
         self.classes = classes
         self.input_size = input_size  # WH
         self.img_paths = list_from_dir(img_dir, ('.jpg', '.png'))
-        self.train = train
+
         if label_dir:
             self.label_paths = list_from_dir(label_dir, ('.jpg', '.png'))
         else:
             self.label_paths = None
 
-        if self.train:
+        if trans:
             self.transforms = transforms.Compose([
                 transforms.RandomHorizontalFlip(p=0.5),
                 transforms.RandomCrop(self.input_size)
@@ -72,7 +72,7 @@ class Dataset:
         return img, label
 
     def format_img(self, img_pil):
-        img_array = np.asarray(img_pil, dtype=np.float32)
+        img_array = np.asarray(img_pil, dtype='float32')
         img_array = img_array / 255  # for vgg16
         img_array = np.expand_dims(img_array, axis=0)
         # img_array = preprocess_input(img_array, mode='tf')  # for vgg16
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     dataset = Dataset(classes=21, input_size=(224, 224),
                       img_dir=train_img_dir, label_dir=train_gt_dir,
-                      train=False)
+                      trans=True)
 
     cnt = 0
     loader = DataLoader(dataset, batch_size=4, shuffle=True)

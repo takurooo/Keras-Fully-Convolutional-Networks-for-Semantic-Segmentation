@@ -6,6 +6,7 @@ import random
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+from color import make_cmap
 # -------------------------------------------
 # defines
 # -------------------------------------------
@@ -34,6 +35,17 @@ def scale(img_pil, target_size):
 # -------------------------------------------
 # public functions
 # -------------------------------------------
+
+
+def label_to_img(pred):
+    cmap = make_cmap()
+    pred_ = np.argmax(pred, axis=2)
+    row, col = pred_.shape
+    dst = np.ones((row, col, 3))
+    for i in range(21):
+        dst[pred_ == i] = cmap[i]
+
+    return np.uint8(dst)
 
 
 class Compose(object):
