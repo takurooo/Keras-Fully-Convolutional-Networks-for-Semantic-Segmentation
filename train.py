@@ -8,6 +8,8 @@ import codecs
 import importlib
 import json
 import numpy as np
+import tensorflow as tf
+from keras import backend as K
 from keras import optimizers
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from dataloader import DataLoader, Dataset
@@ -23,7 +25,36 @@ INPUT_SIZE = 224
 #-------------------------------------------
 # private functions
 #-------------------------------------------
+# PASCAL VOC 2012 class_weight
+VOC_CLASS_WEIGHT = [1.,51.,151.,43.,64.,83.,23.,31.,15.,47.,51.,47.,25.,47.,36.,10.,86.,49.,46.,27.,51.]
 
+def weighted_pixelwise_crossentropy(n_class, class_weights):
+
+    def loss_func(y_true, y_pred):
+        _, h, w, _ = K.int_shape(y_pred)
+        class_weights_tensor = tf.convert_to_tensor(
+            class_weights, dtype=tf.float32)
+
+        flat_y_true = tf.reshape(y_true, [-1, n_class])
+        flat_y_pred = tf.reshape(y_pred, [-1, n_class])
+
+        epsilon = K.epsilon()
+        flat_y_pred = tf.clip_by_value(flat_y_pred, epsilon, 1.)
+
+        x_entorpy = tf.multiply(flat_y_true, tf.log(flat_y_pred))
+        weighted_x_entropy = tf.multiply(x_entorpy, class_weights_tensor)
+        weighted_x_entropy_mean = - tf.reduce_sum(weighted_x_entropy) / (h*w)
+
+        return weighted_x_entropy_mean
+
+    return loss_func
+
+
+def make_weight_map(class_weight):
+    classes = len(class_weight)
+    class_weight_map = np.ones((classes)) * class_weight
+    class_weight_map /= class_weight_map.sum()
+    return class_weight_map
 
 def get_args():
     with open(JSON_PATH, "r") as f:
@@ -103,7 +134,10 @@ def main(args):
     model.compile(loss="categorical_crossentropy",
                   optimizer=optimizer,
                   metrics=["accuracy"])
-
+    # model.compile(loss=weighted_pixelwise_crossentropy(N_CLASS, make_weight_map(VOC_CLASS_WEIGHT)),
+    #               optimizer=optimizer,
+    #               metrics=["accuracy"])
+    
     '''
     Start Training
     '''

@@ -2,6 +2,7 @@
 # import
 # -------------------------------------------
 import os
+import sys
 import re
 import codecs
 import random
@@ -73,7 +74,8 @@ class Dataset:
 
     def format_img(self, img_pil):
         img_array = np.asarray(img_pil, dtype='float32')
-        img_array = img_array / 255  # for vgg16
+        # img_array = img_array / 255  # for vgg16
+        img_array = img_array / 127.5 - 1  # for vgg16
         img_array = np.expand_dims(img_array, axis=0)
         # img_array = preprocess_input(img_array, mode='tf')  # for vgg16
         return img_array
@@ -112,7 +114,6 @@ class DataLoader:
             indices = np.arange(data_num)
             if self.shuffle:
                 np.random.shuffle(indices)
-
             for i in indices:
                 img, label = self.dataset[i]
                 self.x_data_list.append(img[0])
@@ -127,10 +128,12 @@ class DataLoader:
                     yield x_data_list, y_data_list
 
 
+
 # -------------------------------------------
 # main
 # -------------------------------------------
 if __name__ == '__main__':
+
     print("start")
 
     train_img_dir = os.path.join(CUR_PATH, "data", "train", "img")
@@ -145,12 +148,13 @@ if __name__ == '__main__':
     cnt = 0
     loader = DataLoader(dataset, batch_size=4, shuffle=True)
     for train, target in loader.flow():
+
         print(train.shape, train[0].dtype)
         print(target.shape, target[0].dtype)
         imgs = train
         labels = target
 
-        img = imgs[0] * 255
+        img = (imgs[0] + 1) * 127.5
         img = img.astype(np.uint8)
         plt.figure()
         plt.imshow(img)
